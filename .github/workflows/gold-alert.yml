@@ -37,7 +37,7 @@ jobs:
         env:
           NTFY_PREFIX: ${{ secrets.NTFY_PREFIX }}
           ADMIN_TOPIC: ${{ secrets.ADMIN_TOPIC }}
-          THRESHOLDS: "600000,500000,400000,300000,200000,100000"
+          THRESHOLDS: "1000000,900000,800000,700000,600000,500000,400000,300000,200000,100000"
           # The check runs once a day, so tell the admin topic after the first failed run
           FAIL_ALERT_AFTER: "1"
         run: node check_gold.mjs ${{ inputs.test && '--test' || '' }}
