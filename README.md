@@ -1,0 +1,54 @@
+# WARDOGS gold price alerts
+
+Gets your phone to buzz when the WARDOGS gold bar price drops below a level you care about.
+
+The rate comes from the fan site https://wardogshub.gg/gold-market/. It is one price per
+day for everyone and changes at midnight UTC. One script checks it every hour and pushes
+alerts through [ntfy](https://ntfy.sh), a free push-notification service with no accounts.
+
+## For friends (30 seconds)
+
+1. Install the **ntfy** app (Android or iOS).
+2. Tap **+** and subscribe to the topic for the level you want:
+   - `PREFIX-under-500k` pings when gold drops below $500,000
+   - `PREFIX-under-300k`, `PREFIX-under-200k`, `PREFIX-under-100k` work the same way
+   - (ask whoever runs this for the real `PREFIX` and the list of levels)
+3. Done. You get one ping each time the price drops below that level, and another one
+   only after it has gone back above it and dropped again.
+
+You can subscribe to several levels. Nothing to install, no GitHub account needed.
+
+## For the maintainer (one-time setup)
+
+1. Create a **private** GitHub repo. Put `check_gold.mjs` in the root and
+   `gold-alert.yml` in `.github/workflows/`.
+2. Pick two ntfy topic names with long random parts and keep both secret:
+   - `NTFY_PREFIX`, e.g. `wardogs-k7x2q9m4v`. This is the part friends need.
+   - `ADMIN_TOPIC`, e.g. `my-admin-p3r8t1w6z`. Only you subscribe to this one.
+3. Repo Settings -> Secrets and variables -> Actions -> add secrets `NTFY_PREFIX` and
+   `ADMIN_TOPIC`.
+4. Subscribe to `ADMIN_TOPIC` in the ntfy app, then Actions -> "Gold price alert" ->
+   Run workflow with the test box ticked. Your phone should buzz.
+5. Run the workflow once more without the box. The first run only records the current
+   price (no alerts), then every hour it checks for drops.
+
+Levels live in the `THRESHOLDS` line of the workflow file. Change the list, and tell
+friends which new topics exist (`PREFIX-under-<level>`, written like 250k or 1m).
+
+### Failures
+
+Only you hear about them. If two runs in a row fail (for example the site changed its
+layout), `ADMIN_TOPIC` gets one ping, then another when it recovers. Friends never get
+failure messages. GitHub will also email you about failed runs as the repo owner.
+
+### Want your own thresholds instead?
+
+Fork or copy the repo, add your own `NTFY_PREFIX` and `ADMIN_TOPIC` secrets, and edit
+`THRESHOLDS`. Failures then go to your own admin topic.
+
+## Notes
+
+- The topic names are the only access control: anyone who learns `PREFIX` can subscribe
+  (and post fake alerts), so share it only with friends.
+- It makes one request an hour to the site no matter how many people subscribe.
+- If the site goes away or changes its layout the alerts stop until the parser is updated.

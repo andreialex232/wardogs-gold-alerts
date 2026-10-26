@@ -1,0 +1,50 @@
+name: Gold price alert
+
+on:
+  schedule:
+    # Hourly. The rate only changes once a day (midnight UTC), but hourly
+    # covers the delay before the site publishes the new day's price.
+    - cron: "17 * * * *"
+  workflow_dispatch:
+    inputs:
+      test:
+        description: "Send a test notification instead of checking the price"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write # lets the job commit state.json
+
+concurrency:
+  group: gold-alert
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Check gold price
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          THRESHOLD: "200000"
+        run: node check_gold.mjs ${{ inputs.test && '--test' || '' }}
+
+      - name: Save state
+        if: ${{ !inputs.test }}
+        run: |
+          git config user.name "gold-alert-bot"
+          git config user.email "gold-alert-bot@users.noreply.github.com"
+          git add state.json
+          if git diff --cached --quiet; then
+            echo "No state change."
+          else
+            git commit -m "Update gold state"
+            git push
+          fi
