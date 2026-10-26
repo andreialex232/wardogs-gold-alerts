@@ -12,7 +12,7 @@ alerts through [ntfy](https://ntfy.sh), a free push-notification service with no
 2. Tap **+** and subscribe to the topic for the level you want:
    - `PREFIX-under-500k` pings when gold drops below $500,000
    - `PREFIX-under-300k`, `PREFIX-under-200k`, `PREFIX-under-100k` work the same way
-   - (ask whoever runs this for the real `PREFIX` and the list of levels)
+   - (the real `PREFIX` is only shared privately by whoever runs this instance)
 3. Done. You get one ping each time the price drops below that level, and another one
    only after it has gone back above it and dropped again.
 
@@ -20,11 +20,15 @@ You can subscribe to several levels. Nothing to install, no GitHub account neede
 
 ## For the maintainer (one-time setup)
 
-1. Create a **private** GitHub repo. Put `check_gold.mjs` in the root and
-   `gold-alert.yml` in `.github/workflows/`.
-2. Pick two ntfy topic names with long random parts and keep both secret:
-   - `NTFY_PREFIX`, e.g. `wardogs-k7x2q9m4v`. This is the part friends need.
-   - `ADMIN_TOPIC`, e.g. `my-admin-p3r8t1w6z`. Only you subscribe to this one.
+1. Create a GitHub repo (public or private, your secrets never go in the code). Put
+   `check_gold.mjs` in the root and `gold-alert.yml` in `.github/workflows/`.
+2. Pick two ntfy topic names with long random parts and keep both secret. Generate
+   each random part with `node -e "console.log(require('crypto').randomBytes(8).toString('hex'))"`.
+   - `NTFY_PREFIX`, like `wardogs-<random>`. This is the part friends need.
+   - `ADMIN_TOPIC`, like `admin-<another-random>`. Only you subscribe to this one.
+
+   Never write your real topic names into this repo (not in this file, not in the
+   workflow). They belong only in the Actions secrets below.
 3. Repo Settings -> Secrets and variables -> Actions -> add secrets `NTFY_PREFIX` and
    `ADMIN_TOPIC`.
 4. Subscribe to `ADMIN_TOPIC` in the ntfy app, then Actions -> "Gold price alert" ->
