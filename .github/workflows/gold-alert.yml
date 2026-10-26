@@ -2,13 +2,16 @@ name: Gold price alert
 
 on:
   schedule:
-    # Hourly. The rate only changes once a day (midnight UTC), but hourly
-    # covers the delay before the site publishes the new day's price.
-    - cron: "17 * * * *"
+    # Once a day at 4 AM Danish time, all year. The rate turns over at midnight UTC,
+    # so by 4 AM the new day's price is out. With the timezone key, GitHub handles
+    # summer/winter time itself (supported since March 2026). Scheduled runs can start
+    # a few minutes late when GitHub is busy.
+    - cron: "0 4 * * *"
+      timezone: "Europe/Copenhagen"
   workflow_dispatch:
     inputs:
       test:
-        description: "Send a test notification instead of checking the price"
+        description: "Send a test ping to your admin topic instead of checking the price"
         type: boolean
         default: false
 
@@ -32,16 +35,21 @@ jobs:
 
       - name: Check gold price
         env:
-          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
-          THRESHOLD: "200000"
+          NTFY_PREFIX: ${{ secrets.NTFY_PREFIX }}
+          ADMIN_TOPIC: ${{ secrets.ADMIN_TOPIC }}
+          THRESHOLDS: "600000,500000,400000,300000,200000,100000"
+          # The check runs once a day, so tell the admin topic after the first failed run
+          FAIL_ALERT_AFTER: "1"
         run: node check_gold.mjs ${{ inputs.test && '--test' || '' }}
 
+      # always(): the state (including the failure counter) must be saved even when
+      # the check step fails, otherwise you would get a failure ping every hour.
       - name: Save state
-        if: ${{ !inputs.test }}
+        if: ${{ always() && !inputs.test }}
         run: |
           git config user.name "gold-alert-bot"
           git config user.email "gold-alert-bot@users.noreply.github.com"
-          git add state.json
+          git add state.json 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "No state change."
           else
