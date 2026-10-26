@@ -25,7 +25,7 @@ import { fileURLToPath } from "node:url";
 const PAGE_URL = "https://wardogshub.gg/gold-market/";
 const NTFY_PREFIX = (process.env.NTFY_PREFIX ?? "").trim();
 const ADMIN_TOPIC = (process.env.ADMIN_TOPIC ?? "").trim();
-const THRESHOLDS_RAW = process.env.THRESHOLDS ?? "600000,500000,400000,300000,200000,100000";
+const THRESHOLDS_RAW = process.env.THRESHOLDS ?? "1000000,900000,800000,700000,600000,500000,400000,300000,200000,100000";
 const STATE_FILE = process.env.STATE_FILE ?? "state.json";
 const USER_AGENT = "Mozilla/5.0 (compatible; personal-gold-alert/1.0)";
 
