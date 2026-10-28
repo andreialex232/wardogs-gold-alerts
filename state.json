@@ -5,13 +5,13 @@
     "300000": false,
     "400000": false,
     "500000": false,
-    "600000": false,
+    "600000": true,
     "700000": true,
     "800000": true,
     "900000": true,
     "1000000": true
   },
-  "last_price": 641905,
-  "last_date": "27 October 2026",
+  "last_price": 538270,
+  "last_date": "28 October 2026",
   "consecutive_failures": 0
 }
